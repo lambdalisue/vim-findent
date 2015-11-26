@@ -38,9 +38,9 @@ following settings (let's say you want to activate it in *.js or *.css).
 
 ```vim
 augroup findent
-  autocmd! *
-  autocmd BufRead *.js  Findent! activate
-  autocmd BufRead *.css Findent! activate
+  autocmd!
+  autocmd BufWinEnter *.js  Findent activate
+  autocmd BufWinEnter *.css Findent activate
 augroup END
 ```
 
