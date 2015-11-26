@@ -26,15 +26,11 @@ call s:parser.add_argument(
       \   'choices': ['toggle', 'activate', 'deactivate'],
       \ })
 call s:parser.add_argument(
-      \ '--startline', '-s' [
-      \   'Start guessing from this line',
-      \ ], {
-      \ })
+      \ '--startline', '-s', 'Start guessing from this line',
+      \)
 call s:parser.add_argument(
-      \ '--lastline', '-l' [
-      \   'End guessing at this line',
-      \ ], {
-      \ })
+      \ '--lastline', '-l', 'End guessing at this line',
+      \)
 
 function! Findent(...) abort " {{{
   let config = call(s:parser.parse, a:000, s:parser)

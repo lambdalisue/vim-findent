@@ -1,5 +1,8 @@
+<h1>
 vim-findent
-===============================================================================
+[![Build status](https://travis-ci.org/lambdalisue/vim-findent.svg?branch=master)](https://travis-ci.org/lambdalisue/vim-findent)
+[![Build status](https://ci.appveyor.com/api/projects/status/p7orkdddc08v4lvk/branch/master?svg=true)](https://ci.appveyor.com/project/lambdalisue/vim-findent/branch/master)
+</h1>
 
 vim-findent is a plugin to guess and apply the existing indent rule of the
 current buffer. This plugin guess reasonable value of `expandtab` and `shiftwidth`

@@ -1,0 +1,5 @@
+let s:assert = themis#helper('assert')
+call themis#option('recursive', 1)
+call themis#helper('command').with(s:assert)
+
+"vim: sts=2 sw=2 smarttab et ai textwidth=0 fdm=marker ft=vim

@@ -1,0 +1,110 @@
+Describe findent#
+  Context guess({content})
+    It should return an empty dictionary for an empty {content}
+      let ret = findent#guess([])
+      Assert Equals(ret, {})
+    End
+
+    It should return a correct value for tab indented {content}
+      let content = [
+            \ 'Foo',
+            \ "\tbar",
+            \ "\t\thoge",
+            \ "\tbar",
+            \ "\t\thoge",
+            \ ' wrong indent',
+            \]
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 0,
+            \ 'shiftwidth': 0,
+            \ 'softtabstop': 0,
+            \})
+    End
+
+    It should return a correct value for 2 spaces indented {content}
+      let content = [
+            \ 'Foo',
+            \ '  bar',
+            \ '    hoge',
+            \ '  bar',
+            \ '    hoge',
+            \ ' wrong indent',
+            \]
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 1,
+            \ 'shiftwidth': 2,
+            \ 'softtabstop': 2,
+            \})
+    End
+
+    It should return a correct value for 4 spaces indented {content}
+      let content = [
+            \ 'Foo',
+            \ '    bar',
+            \ '        hoge',
+            \ '    bar',
+            \ '        hoge',
+            \ ' wrong indent',
+            \]
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 1,
+            \ 'shiftwidth': 4,
+            \ 'softtabstop': 4,
+            \})
+    End
+
+    It should return a correct value for 8 spaces indented {content}
+      let content = [
+            \ 'Foo',
+            \ '        bar',
+            \ '                hoge',
+            \ ' wrong indent',
+            \]
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 1,
+            \ 'shiftwidth': 8,
+            \ 'softtabstop': 8,
+            \})
+    End
+
+    It should return a correct value for 2 spaces and tab indented mixed {content}
+      let content = [
+            \ 'Foo',
+            \ "\tbar",
+            \ "\t\thoge",
+            \ "\t\t\tpiyo",
+            \ 'Foo',
+            \ '  bar',
+            \ '    hoge',
+            \ ' wrong indent',
+            \]
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 0,
+            \ 'shiftwidth': 0,
+            \ 'softtabstop': 0,
+            \})
+
+      let content = [
+            \ 'Foo',
+            \ "\tbar",
+            \ "\t\thoge",
+            \ 'Foo',
+            \ '  bar',
+            \ '    hoge',
+            \ '      piyo',
+            \ ' wrong indent',
+            \]
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 1,
+            \ 'shiftwidth': 2,
+            \ 'softtabstop': 2,
+            \})
+    End
+  End
+End
