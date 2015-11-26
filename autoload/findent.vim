@@ -1,7 +1,8 @@
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-function! findent#guess(content) abort " {{{
+function! findent#guess(content, ...) abort " {{{
+  let threshold = get(a:000, 0, g:findent#threshold)
   let leadings = filter(
         \ map(a:content, 'matchstr(v:val, "^\\%(\\t\\|  \\)\\+")'),
         \ '!empty(v:val)'
@@ -35,6 +36,9 @@ function! findent#guess(content) abort " {{{
     if s > score
       let unit = x
       let score = s
+      if score >= threshold
+        break
+      endif
     endif
   endfor
   if score == 0

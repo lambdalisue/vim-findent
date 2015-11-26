@@ -57,6 +57,7 @@ command! -nargs=? -range -bang
 let s:default = {
       \ 'startline': 0,
       \ 'lastline': 100,
+      \ 'threshold': 1,
       \}
 function! s:init() abort " {{{
   for [key, value] in items(s:default)
