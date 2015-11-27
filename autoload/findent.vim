@@ -71,7 +71,7 @@ function! findent#activate(...) abort " {{{
     endif
     return
   endif
-  let startline = min([line('$'), config.startline])
+  let startline = config.startline > line('$') ? 0 : config.startline
   let lastline  = min([line('$'), config.lastline])
   let content   = getline(startline, lastline)
   let meta = call('findent#guess', [content])
