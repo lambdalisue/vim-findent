@@ -57,9 +57,9 @@ Usage
 -------------------------------------------------------------------------------
 
 To find and apply reasonable `expandtab`, `shiftwidth`, `tabstop`, and `softtabstop` of
-the current buffer, call `:Findent` or `:FindentActivate`.
-If you want to control the region of content used for detection, select the
-region via visual selection (V) and call the command above.
+the current buffer, call `:Findent`.
+It automatically use a middle part of the content to detect the reasonable indent rule and apply to the local setting (`setlocal`).
+If you want to control the region of content used for detection, use visual selection to select the region prior to the command.
 
 If you want to make this detection automatic, use `autocmd` like:
 
