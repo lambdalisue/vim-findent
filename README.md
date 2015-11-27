@@ -55,7 +55,7 @@ your $VIM directory to enable the plugin.
 Usage
 -------------------------------------------------------------------------------
 
-To find and apply reasonable `expandtab`, `shiftwidth`, and `softtabstop` of
+To find and apply reasonable `expandtab`, `shiftwidth`, `tabstop', and `softtabstop` of
 the current buffer, call `:Findent` or `:FindentActivate`.
 If you want to control the region of content used for detection, select the
 region via visual selection (V) and call the command above.
