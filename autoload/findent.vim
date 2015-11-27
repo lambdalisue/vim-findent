@@ -1,22 +1,54 @@
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-function! s:guess_tab_style(tabs, leadings, threshold) abort " {{{
-  let tab_spaces = filter(
+function! s:parse_args(args, ...) abort " {{{
+  let options = get(a:000, 0, {})
+  for arg in a:args
+    if arg ==# '-h' || arg ==# '--help'
+      let options.help = 1
+    elseif arg ==# '--messages'
+      let options.messages = 1
+    elseif arg ==# '--no-messages'
+      let options.messages = 0
+    elseif arg ==# '--warnings'
+      let options.warnings = 1
+    elseif arg ==# '--no-warnings'
+      let options.warnings = 0
+    elseif arg =~# '^--threshold='
+      let options.threshold = str2nr(matchstr(arg, '^--threshold=\zs\d\+'))
+    elseif arg =~# '^--chunksize='
+      let options.chunksize = str2nr(matchstr(arg, '^--chunksize=\zs\d\+'))
+    else
+      echohl ErrorMsg
+      echo printf('Unknown option "%s" is specified', arg)
+      echohl None
+      return {}
+    endif
+  endfor
+  return options
+endfunction " }}}
+function! s:filter_minority(candidates, ...) abort " {{{
+  let alpha     = get(a:000, 0, 0.05)
+  let threshold = len(a:candidates) * alpha
+  let frequency = {}
+  for candidate in a:candidates
+    let frequency[candidate] = get(frequency, candidate, 0) + 1
+  endfor
+  return filter(copy(a:candidates), 'frequency[v:val] > threshold')
+endfunction " }}}
+function! s:guess_tab_style(spaces, tabs, leadings, threshold) abort " {{{
+  let tab_spaces = s:filter_minority(filter(
         \ map(copy(a:leadings), 'len(matchstr(v:val, "^\\t\\+\\zs \\+"))'),
-        \ 'v:val'
-        \)
+        \ 'index(g:findent#samples, v:val) >= 0'
+        \))
   if !empty(tab_spaces)
     " Vim(C)/Ruby(C) or BSD/KNF style variant (shiftwidth=4, tabstop=8)
-    " Use 'spaces' instead of 'tab_spaces' to improve detection accuracy
-    let spaces = filter(
-          \ map(copy(a:leadings), 'len(matchstr(v:val, "^ \\+"))'),
-          \ 'v:val'
-          \)
+    " Use 'spaces' instead of 'tab_spaces' for determine the maximum number
+    " of spaces to improve detection accuracy
     return {
           \ 'expandtab': 0,
-          \ 'shiftwidth': min(spaces),
-          \ 'tabstop': min(spaces) + max(spaces),
+          \ 'shiftwidth': min(a:spaces),
+          \ 'tabstop': min(a:spaces) + max(a:spaces),
           \ 'softtabstop': 0,
           \}
   else
@@ -28,20 +60,20 @@ function! s:guess_tab_style(tabs, leadings, threshold) abort " {{{
           \}
   endif
 endfunction " }}}
-function! s:guess_space_style(spaces, leadings, threshold) abort " {{{
-  let score = 0
+function! s:guess_space_style(spaces, tabs, leadings, threshold) abort " {{{
+  let topscore = 0
   let unit  = 0
-  for x in g:findent#available_units
-    let s = len(filter(copy(a:spaces), printf('v:val == %d', x)))
-    if s > score
-      let unit = x
-      let score = s
+  for sample in g:findent#samples
+    let score = len(filter(copy(a:spaces), 'v:val == sample'))
+    if score > topscore
+      let unit = sample
+      let topscore = score
       if a:threshold > 0 && score >= a:threshold
         break
       endif
     endif
   endfor
-  if score == 0
+  if topscore == 0
     return {}
   endif
   return {
@@ -54,58 +86,74 @@ endfunction " }}}
 function! findent#guess(content, ...) abort " {{{
   let threshold = get(a:000, 0, g:findent#threshold)
   let leadings = filter(
-        \ map(a:content, 'matchstr(v:val, "^\\%(\\t\\|  \\)\\+")'),
+        \ map(a:content, 'matchstr(v:val, "^\\%(\\t\\| \\)\\+")'),
         \ '!empty(v:val)'
         \)
   if empty(leadings)
     " failed to guess
     return {}
   endif
-  let spaces = filter(
+  let spaces = s:filter_minority(filter(
         \ map(copy(leadings), 'len(matchstr(v:val, "^ \\+"))'),
-        \ 'v:val'
-        \)
-  let tabs = filter(
+        \ 'index(g:findent#samples, v:val) >= 0'
+        \))
+  let tabs = s:filter_minority(filter(
         \ map(copy(leadings), 'len(matchstr(v:val, "^\\t\\+"))'),
         \ 'v:val'
-        \)
+        \))
   if len(spaces) <= len(tabs)
-    return s:guess_tab_style(tabs, leadings, threshold)
+    return s:guess_tab_style(spaces, tabs, leadings, threshold)
   else
-    return s:guess_space_style(spaces, leadings, threshold)
+    return s:guess_space_style(spaces, tabs, leadings, threshold)
   endif
 endfunction " }}}
-function! findent#toggle(...) abort " {{{
-  if exists('b:_findent')
-    call call('findent#deactivate', a:000)
-  else
-    call call('findent#activate', a:000)
-  endif
-endfunction " }}}
-function! findent#activate(...) abort " {{{
-  let config = extend({
-        \ 'no_messages': 0,
-        \ 'no_warnings': 0,
-        \ 'startline': g:findent#startline,
-        \ 'lastline':  g:findent#lastline,
+function! findent#apply(...) abort " {{{
+  let options = extend({
+        \ 'force': 0,
+        \ 'messages': g:findent#enable_messages,
+        \ 'warnings': g:findent#enable_warnings,
+        \ 'threshold': g:findent#threshold,
+        \ 'chunksize': g:findent#chunksize,
+        \ 'startline': 0,
+        \ 'lastline':  0,
         \}, get(a:000, 0, {})
         \)
   if exists('b:_findent')
-    if !config.no_warnings
-      echohl WarningMsg
-      echo 'Findent has already activated in this buffer'
-      echohl None
+    if options.force
+      call findent#restore({'messages': 0, 'warnings': 0})
+    else
+      if options.warnings
+        echohl WarningMsg
+        echo printf(
+              \ 'findent has already applied (%s, shiftwidth=%d, tabstop=%d, and softtabstop=%d)',
+              \ &l:expandtab ? 'expandtab' : 'noexpandtab',
+              \ &l:shiftwidth,
+              \ &l:tabstop,
+              \ &l:softtabstop,
+              \)
+        echohl None
+      endif
+      return
     endif
-    return
   endif
-  let startline = config.startline > line('$') ? 0 : config.startline
-  let lastline  = min([line('$'), config.lastline])
-  let content   = getline(startline, lastline)
-  let meta = call('findent#guess', [content])
+  let N = line('$')
+  if options.startline == options.lastline
+    " calculate reasonable startline and lastline
+    let startline = N - float2nr(round(options.chunksize / 2))
+    let lastline  = startline + options.chunksize
+  else
+    " use specified startline and lastline
+    let startline = options.startline
+    let lastline  = options.lastline
+  endif
+  let startline = max([0, startline])
+  let lastline  = min([N, lastline])
+  let content = getline(startline, lastline)
+  let meta = call('findent#guess', [content, options.threshold])
   if empty(meta)
-    if !config.no_warnings
+    if options.warnings
       echohl WarningMsg
-      echo 'Findent has failed to guess the indent rule in this buffer'
+      echo 'findent has failed to guess the indent rule of the current buffer'
       echohl None
     endif
     return
@@ -120,9 +168,9 @@ function! findent#activate(...) abort " {{{
   let &l:tabstop     = get(meta, 'tabstop', &l:tabstop)
   let &l:softtabstop = get(meta, 'softtabstop', &l:softtabstop)
   let b:_findent = meta
-  if !config.no_messages
+  if options.messages
     echo printf(
-          \ 'Findent is activated (%s, shiftwidth=%d, tabstop=%d, and softtabstop=%d)',
+          \ 'findent is applied (%s, shiftwidth=%d, tabstop=%d, and softtabstop=%d)',
           \ &l:expandtab ? 'expandtab' : 'noexpandtab',
           \ &l:shiftwidth,
           \ &l:tabstop,
@@ -130,16 +178,22 @@ function! findent#activate(...) abort " {{{
           \)
   endif
 endfunction " }}}
-function! findent#deactivate(...) abort " {{{
-  let config = extend({
-        \ 'no_messages': 0,
-        \ 'no_warnings': 0,
+function! findent#restore(...) abort " {{{
+  let options = extend({
+        \ 'messages': g:findent#enable_messages,
+        \ 'warnings': g:findent#enable_warnings,
         \}, get(a:000, 0, {})
         \)
   if !exists('b:_findent')
-    if !config.no_warnings
+    if options.warnings
       echohl WarningMsg
-      echo 'Findent has not activated in this buffer'
+      echo printf(
+            \ 'findent has not applied yet (%s, shiftwidth=%d, tabstop=%d, and softtabstop=%d)',
+            \ &l:expandtab ? 'expandtab' : 'noexpandtab',
+            \ &l:shiftwidth,
+            \ &l:tabstop,
+            \ &l:softtabstop,
+            \)
       echohl None
     endif
     return
@@ -150,9 +204,9 @@ function! findent#deactivate(...) abort " {{{
   let &l:tabstop     = meta.previous.tabstop
   let &l:softtabstop = meta.previous.softtabstop
   unlet! b:_findent
-  if !config.no_messages
+  if options.messages
     echo printf(
-          \ 'Findent is deactivated (%s, shiftwidth=%d, tabstop=%d, and softtabstop=%d)',
+          \ 'Findent is restored (%s, shiftwidth=%d, tabstop=%d, and softtabstop=%d)',
           \ &l:expandtab ? 'expandtab' : 'noexpandtab',
           \ &l:shiftwidth,
           \ &l:tabstop,
@@ -161,48 +215,65 @@ function! findent#deactivate(...) abort " {{{
   endif
 endfunction " }}}
 
-function! findent#Findent(bang, line1, line2, arg) abort " {{{
-  let config = {
-        \ 'no_messages': a:arg ==# 'quiet',
-        \ 'no_warnings': a:bang ==# '!',
+function! findent#Findent(bang, line1, line2, args) abort " {{{
+  let options = s:parse_args(a:args, {
+        \ 'force': a:bang ==# '!',
         \ 'startline': a:line1,
         \ 'lastline': a:line2,
-        \}
-  if a:line1 == a:line2
-    let config.startline = g:findent#startline
-    let config.lastline  = g:findent#lastline
+        \})
+  if get(options, 'help')
+    echo ':Findent[!] [-h|--help] [--[no-]messages] [--[no-]warnings] [--chunksize={CHUNKSIZE}] [--threshold={THRESHOLD}]'
+    echo ' '
+    echo 'Find and apply a reasonable indent rule of the current buffer'
+    echo ' '
+    echo 'Optional arguments:'
+    echo ' -h, --help                 Show this help'
+    echo ' --[no-]messages            Show detection messages'
+    echo ' --[no-]warnings            Show warning messages'
+    echo ' --chunksize={CHUNKSIZE}    Specify chunksize (the number of lines) of the content'
+    echo ' --threshold={THRESHOLD}    Specify detection threshold of a space indent'
+  else
+    call findent#apply(options)
   endif
-  call findent#toggle(config)
 endfunction " }}}
-function! findent#FindentActivate(bang, line1, line2, arg) abort " {{{
-  let config = {
-        \ 'no_messages': a:arg ==# 'quiet',
-        \ 'no_warnings': a:bang ==# '!',
-        \ 'startline': a:line1,
-        \ 'lastline': a:line2,
-        \}
-  if a:line1 == a:line2
-    let config.startline = g:findent#startline
-    let config.lastline  = g:findent#lastline
+function! findent#FindentRestore(args) abort " {{{
+  let options = s:parse_args(a:args)
+  if get(options, 'help')
+    echo ':FindentRestore [-h|--help] [--[no-]messages] [--[no-]warnings]'
+    echo ' '
+    echo 'Restore a previous indent rule of the current buffer'
+    echo ' '
+    echo 'Optional arguments:'
+    echo ' -h, --help                 Show this help'
+    echo ' --[no-]messages            Show detection messages'
+    echo ' --[no-]warnings            Show warning messages'
+  else
+    call findent#restore(options)
   endif
-  call findent#activate(config)
-endfunction " }}}
-function! findent#FindentDeactivate(bang, arg) abort " {{{
-  let config = {
-        \ 'no_messages': a:arg ==# 'quiet',
-        \ 'no_warnings': a:bang ==# '!',
-        \}
-  call findent#deactivate(config)
 endfunction " }}}
 function! findent#FindentComplete(arglead, cmdline, cursorpos) abort " {{{
-  return ['quiet']
+  let candidates = [
+        \ '--messages', '--no-messages',
+        \ '--warnings', '--no-warnings',
+        \ '--threshold=',
+        \ '--chunksize=',
+        \]
+  return filter(candidates, printf('v:val =~# "^%s"', a:arglead))
+endfunction " }}}
+function! findent#FindentRestoreComplete(arglead, cmdline, cursorpos) abort " {{{
+  let candidates = [
+        \ '--messages', '--no-messages',
+        \ '--warnings', '--no-warnings',
+        \]
+  return filter(candidates, printf('v:val =~# "^%s"', a:arglead))
 endfunction " }}}
 
 let s:default = {
-      \ 'startline': 0,
-      \ 'lastline': 100,
+      \ 'enable_messages': 1,
+      \ 'enable_warnings': 1,
+      \ 'chunksize': 1000,
       \ 'threshold': 1,
-      \ 'available_units': [2, 4, 8],
+      \ 'samples': [2, 4, 8],
       \}
 function! s:init() abort " {{{
   for [key, value] in items(s:default)

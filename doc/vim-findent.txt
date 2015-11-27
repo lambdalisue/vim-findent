@@ -44,13 +44,13 @@ INTRODUCTION				*vim-findent-introduction*
 |shiftwidth|, |tabstop|, and |softtabstop| of the current buffer.
 
 vim-findent is small and simple plugin, compares to existing similar plugins
-such as vim-sleuth or detectindent. This plugin only provide three commands and
-no default |autocmd| is provided, mean that user can control the behavior of
-automatic detection by defining |autocmd| by them self. The detection algorithm
-is much simpler as well compared to vim-sleuth or detectindent. While we are
-living a real world and we are editing pre-formatted codes, I don't really
-think we need a super perfect but complex algorithm. A faster and simpler
-algorithm would be better.
+such as vim-sleuth or detectindent. This plugin only provides two commands and
+no default |autocmd| is provided, mean that users can control the behavior of
+automatic detection by defining |autocmd| by themselves.
+The detection algorithm is much simpler as well compared to vim-sleuth or
+detectindent. While we are living in a real world and we are editing
+pre-formatted codes, I don't really think we need a super perfect but complex
+algorithm. A faster and simpler algorithm would be better.
 
 
 ==============================================================================
@@ -69,22 +69,23 @@ Use Vundle.vim, neobundle.vim, or other vim plugin manager to install it like:
 		\ 'autoload': {
 		\   'commands': [
 		\     'Findent',
-		\     'FindentActivate',
-		\     'FindentDeactivate',
+		\     'FindentRestore',
 		\   ],
 		\}}
 
 	" neobundle.vim (Lazy: with completion)
 	NeoBundleLazy 'lambdalisue/vim-findent', {
 		\ 'autoload': {
-		\   'commands': [{
-		\     'name': [
-		\       'Findent',
-		\       'FindentActivate',
-		\       'FindentDeactivate',
-		\     ],
-		\     'complete': 'customlist,findent#FindentComplete',
-		\   }],
+		\   'commands': [
+		\     {
+		\       'name': 'Findent',
+		\       'complete': 'customlist,findent#FindentComplete',
+		\     },
+		\     {
+		\       'name': 'FindentRestore',
+		\       'complete': 'customlist,findent#FindentRestoreComplete',
+		\     },
+		\   ],
 		\}}
 <
 If you are not using any vim plugin manager, you can copy the repository to
@@ -95,7 +96,7 @@ your $VIM directory to enable the plugin.
 USAGE					*vim-findent-usage*
 
 To find and apply reasonable |expandtab|, |shiftwidth|, |tabstop|, and
-|softtabstop| of the current buffer, call |:Findent| or |:FindentActivate|.
+|softtabstop| of the current buffer, call |:Findent|.
 If you want to control the region of content used for detection, select the
 region via visual selection (V) and call the command above.
 
@@ -103,24 +104,24 @@ If you want to make this detection automatic, use |autocmd| like:
 >
 	augroup findent
 	  autocmd!
-	  autocmd BufRead *.js  FindentActivate
-	  autocmd BufRead *.css FindentActivate
+	  autocmd BufRead *.js  Findent
+	  autocmd BufRead *.css Findent
 	augroup END
 <
-If you feel annoying for the detection fail message, use a bang (!) to suppress:
+If you feel annoying for the detection message, use '--no-messages':
 >
 	augroup findent
 	  autocmd!
-	  autocmd BufRead *.js  FindentActivate!
-	  autocmd BufRead *.css FindentActivate!
+	  autocmd BufRead *.js  Findent --no-messages
+	  autocmd BufRead *.css Findent --no-messages
 	augroup END
 <
-If you want to completely suppress the messages, specify 'quiet':
+Or if you want to completely suppress messages, use '--no-warnings' as well:
 >
 	augroup findent
 	  autocmd!
-	  autocmd BufRead *.js  FindentActivate! quiet
-	  autocmd BufRead *.css FindentActivate! quiet
+	  autocmd BufRead *.js  Findent --no-messages --no-warnings
+	  autocmd BufRead *.css Findent --no-messages --no-warnings
 	augroup END
 <
 Note: Use |BufRead| instead of |FileType| to prevent overwriting by ftplugin.
@@ -131,75 +132,102 @@ INTERFACE				*vim-findent-interface*
 -------------------------------------------------------------------------------
 COMMAND					*vim-findent-command*
 
-:Findent[!] [quiet]					*:Findent*
+							*:Findent*
+:Findent[!] [-h|--help] [--[no-]messages] [--[no-]warnings]
+		[--chunksize={CHUNKSIZE}] [--threshold={THRESHOLD}]
 
-	Activate or deactivate (toggle) findent. If a bang (!) is specified to
-	the command, warning messages are suppressed and if 'quiet' is specified,
-	detection messages are suppressed.
-	See |:Findent-activate| and |:Findent-deactivate|.
+	Find and apply reasonable values of |expandtab|, |shiftwidth|, |tabstop|,
+	and |softtabstop| of the current buffer.
+	If a |<bang>| (!) is specified, it force to find and apply the
+	reasonable indent rule. Otherwise it fail if the indent rules are
+	already applied.
 
-:FindentActivate[!] [quiet]				*:Findent-activate*
+	If '--no-messages' is specified, detection messages will be
+	suppressed. To enforce to display the messages, use '--messages'.
+	The default behavior is depend on |g:findent#enable_messages|.
+	If '--no-warnings' is specified, warning messages will be
+	suppressed. To enforce to display the messages, use '--warnings'.
+	The default behavior is depend on |g:findent#enable_warnings|.
 
-	Find and apply reasonable |expandtab|, |shiftwidth|, |tabstop|, and
-	|softtabstop| of the content of the current buffer.
-	If a bang (!) is specified to the command, warning messages are
-	suppressed and if 'quiet' is specified, detection messages are
-	suppressed.
-	It use the content between |g:findent#startline| (default: 0) and
-	|g:findent#lastline| (default: 100). To specify a particular region,
-	select the region via visual selection (V) and call this command.
-	The previous |expandtab|, |shiftwidth|, and |softtabstop| are saved in
-	a buffer variable and can be restored by |Findent-deactivate|.
+	The detection will be performed on {CHUNKSIZE} lines at the middle
+	part of the content of the current buffer. To control the region of
+	the detection, use visual selection prior to the command.
+	The default value is |g:findent#chunksize|.
 
-:FindentDeactivate[!] [quiet]				*:Findent-deactivate*
+	The detected number of spaces in a space indent will be influenced by
+	{THRESHOLD}. If {THRESHOLD} is 0, the number of appearance of each
+	sample in |g:findent#samples| are counted and most frequent sample
+	would be the number of spaces of a unit. However, if {THRESHOLD} is
+	grater than 0, the detection procedure will be complete when the number
+	of appearance of a sample reaches to the {THRESHOLD}. This {THRESHOLD}
+	stands for detecting a correct indent rule from a content like below:
+>
+	" expandtab, shiftwidth=2, softtabstop=2
+	function! FizzBuzz(n) abort
+	  function! s:fizzbuzz(i) abort
+	    let mod3 = i % 3 == 0 ? 'Fizz' : ''
+	    let mod5 = i % 5 == 0 ? 'Buzz' : ''
+	    let ret  = mod3 . mod5
+	    return empty(ret) ? string(i) : ret
+	  endfunction
+	endfunction
+<
+	The content above has two lines with 2 leading spaces and four lines
+	with 4 leading spaces. In this case, the detection program choose a
+	dominant leading spaces (4 spaces) as the number of spaces of a unit
+	if {THRESHOLD} is 0.
+	The default value is |g:findent#threshold|.
+
+	To restore the indent rule, call |:FindentRestore|.
+
+							*:FindentRestore*
+:FindentRestore [-h|--help] [--[no-]messages] [--[no-]warnings]
 
 	Restore previous |expandtab|, |shiftwidth|, |tabstop|, and
-	|softtabstop| of the current buffer saved by |:FindentActivate|.
-	If a bang (!) is specified to the command, warning messages are
-	suppressed and if 'quiet' is specified, detection messages are
-	suppressed.
+	|softtabstop| of the current buffer saved by |:Findent|.
+
+	If '--no-messages' is specified, detection messages will be
+	suppressed. To enforce to display the messages, use '--messages'.
+	The default behavior is depend on |g:findent#enable_messages|.
+	If '--no-warnings' is specified, warning messages will be
+	suppressed. To enforce to display the messages, use '--warnings'.
+	The default behavior is depend on |g:findent#enable_warnings|.
 
 -------------------------------------------------------------------------------
 VARIABLE				*vim-findent-variable*
 
-g:findent#startline					*g:findent#startline*
+g:findent#enable_messages			 *g:findent#enable_messages*
 
-	A |Number|. findent try to detect the existing indent rule of the buffer
-	from this line of the buffer.
-	Default is 0.
+	Enable detection messages of |:Findent| and |:FindentRestore|.
+	If the value is 0, users need to specify '--messages' to see the
+	detection messages.
+	Default is 1
 
-g:findent#lastline					*g:findent#lastline*
+g:findent#enable_warnings			 *g:findent#enable_warnings*
 
-	A |Number|. findent try to detect the existing indent rule of the buffer
-	to this line of the buffer.
-	Default is 100.
+	Enable warning messages of |:Findent| and |:FindentRestore|.
+	If the value is 0, users need to specify '--warnings' to see the
+	warning messages.
+	Default is 1
 
-g:findent#threshold					*g:findent#threshold*
+g:findent#chunksize				*g:findent#chunksize*
 
-	A |Number|. If the value is grater than 0, findent complete detection of
-	unit (the number of spaces) when the number of unit appearance reach
-	this value. Otherwise findent compare the number of appearance of each
-	units and determine the reasonable unit.
-	
-	For example, the unit of the following content will be 2 if the value
-	of this option is 1. Otherwise the unit will be 4 because the number
-	of appearance of 4 (hoge) is grather than 2 (bar).
->
-	foo
-	  bar
-	    hoge
-	    hoge
-	    hoge
-<       
-	Default is 1.
+	A default value (|Number|) of {CHUNKSIZE} used in |:Findent|.
+	Default is 1000
 
-g:findent#available_units			*g:findent#available_units*
+g:findent#threshold				*g:findent#threshold*
 
-	A |List|. The number of spaces in this list are used as unit.
-	Posterior units will not be investigated if |g:findent#threshold| is
-	grather than 0 and the number of appearance of the prior unit reach
-	the threshold. So pay attention to the order of unit appearance in the
-	list.
+	A default value (|Number|) of {THRESHOLD} used in |:Findent|.
+	Default is 1
+
+g:findent#samples				*g:findent#samples*
+
+	A |List| of the number of spaces of the unit (investigation sample).
+	Only the number of spaces in this variable are allowed to be an indent
+	unit, to decrease mis-detections of |shiftwidth| and/or |softtabstop|.
+	Posterior samples will not be investigated if |g:findent#threshold| is
+	grater than 0 and the number of appearance of the prior sample reach
+	the threshold. So pay attention to the order of sample in the list.
 	Default is [2, 4, 8]
 
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

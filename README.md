@@ -6,7 +6,7 @@ vim-findent [![Build status](https://travis-ci.org/lambdalisue/vim-findent.svg?b
 `shiftwidth`, `tabstop`, and `softtabstop` from the content of the current buffer.
 
 vim-findent is a small and simple Vim plugin, compares to existing similar plugins such as [vim-sleuth](https://github.com/tpope/vim-sleuth) or [detectindent](https://github.com/ciaranm/detectindent).
-This plugin only provides three commands and no default `autocmd` is provided, mean that users can control the behaviour of automatic detection by defining `autocmd` by themselves.
+This plugin only provides three commands and no default `autocmd` is provided, mean that users can control the behavior of automatic detection by defining `autocmd` by themselves.
 The detection algorithm is much simpler as well compared to vim-sleuth or detectindent.
 While we are living in a real world and we are editing pre-formatted codes, I don't really think we need a super perfect but complex algorithm.
 A faster and simpler algorithm would be better.
@@ -30,22 +30,23 @@ NeoBundleLazy 'lambdalisue/vim-findent', {
 	\ 'autoload': {
 	\   'commands': [
 	\     'Findent',
-	\     'FindentActivate',
-	\     'FindentDeactivate',
+	\     'FindentRestore',
 	\   ],
 	\}}
 
 " neobundle.vim (Lazy: with completion)
 NeoBundleLazy 'lambdalisue/vim-findent', {
 	\ 'autoload': {
-	\   'commands': [{
-	\     'name': [
-	\       'Findent', 
-	\       'FindentActivate'
-	\       'FindentDeactivate'
-	\     ],
-	\     'complete': 'customlist,findent#FindentComplete',
-	\   }],
+	\   'commands': [
+	\     {
+	\       'name': 'Findent',
+	\       'complete': 'customlist,findent#FindentComplete',
+	\     },
+	\     {
+	\       'name': 'FindentRestore',
+	\       'complete': 'customlist,findent#FindentRestoreComplete',
+	\     },
+	\  ],
 	\}}
 ```
 
@@ -66,28 +67,28 @@ If you want to make this detection automatic, use `autocmd` like:
 ```vim
 augroup findent
   autocmd!
-  autocmd BufRead *.js  FindentActivate
-  autocmd BufRead *.css FindentActivate
+  autocmd BufRead *.js  Findent
+  autocmd BufRead *.css Findent
 augroup END
 ```
 
-If you feel annoying for the detection fail message, use a bang (!) to suppress:
+If you feel annoying for the detection message, use '--no-messages':
 
 ```vim
 augroup findent
   autocmd!
-  autocmd BufRead *.js  FindentActivate!
-  autocmd BufRead *.css FindentActivate!
+  autocmd BufRead *.js  Findent --no-messages
+  autocmd BufRead *.css Findent --no-messages
 augroup END
 ```
 
-Or if you want to completely suppress the messages, specify 'quiet':
+Or if you want to completely suppress messages, use '--no-warnings' as well:
 
 ```vim
 augroup findent
   autocmd!
-  autocmd BufRead *.js  FindentActivate! quiet
-  autocmd BufRead *.css FindentActivate! quiet
+  autocmd BufRead *.js  Findent --no-messages --no-warnings
+  autocmd BufRead *.css Findent --no-messages --no-warnings
 augroup END
 ```
 
