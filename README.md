@@ -1,16 +1,21 @@
 vim-findent [![Build status](https://travis-ci.org/lambdalisue/vim-findent.svg?branch=master)](https://travis-ci.org/lambdalisue/vim-findent) [![Build status](https://ci.appveyor.com/api/projects/status/p7orkdddc08v4lvk/branch/master?svg=true)](https://ci.appveyor.com/project/lambdalisue/vim-findent/branch/master)
 ===============================================================================
 
-vim-findent is a plugin to guess and apply the existing indent rule of the
-current buffer. This plugin guess reasonable value of `expandtab` and `shiftwidth`
-from the contents of the current buffer and apply.
+
+*vim-findent* is a plugin to find and apply reasonable values of `expandtab`,
+`shiftwidth`, and `softtabstop` from the content of the current buffer.
+
+vim-findent is small and simple plugin, compares to existing similar plugins such as [vim-sleuth](https://github.com/tpope/vim-sleuth) or [detectindent](https://github.com/ciaranm/detectindent).
+This plugin only provide three commands and no default `autocmd` is provided, mean that user can control the behavior of automatic detection by defining `autocmd` by them self.
+The detection algorithm is much simpler as well compared to vim-sleuth or detectindent.
+While we are living a real world and we are editing pre-formatted codes, I don't really think we need a super perfect but complex algorithm.
+A faster and simpler algorithm would be better.
+
 
 Install
 -------------------------------------------------------------------------------
 
-The repository (https://github.com/lambdalisue/vim-findent) follow a standard
-directory structure thus you can use Vundle.vim, neobundle.vim, or other vim
-plugin manager to install |vim-findent| like:
+Use Vundle.vim, neobundle.vim, or other vim plugin manager to install it like:
 
 ```vim
 " Vundle.vim
@@ -22,7 +27,11 @@ NeoBundle 'lambdalisue/vim-findent'
 " neobundle.vim (Lazy)
 NeoBundleLazy 'lambdalisue/vim-findent', {
 	\ 'autoload': {
-	\   'commands': ['Findent'],
+	\   'commands': [
+	\     'Findent'
+	\     'FindentActivate'
+	\     'FindentDeactivate'
+	\   ],
 	\}}
 ```
 
@@ -33,21 +42,40 @@ your $VIM directory to enable the plugin.
 Usage
 -------------------------------------------------------------------------------
 
-If you want to automatically activate findent in particular filetypes. Use the
-following settings (let's say you want to activate it in *.js or *.css).
+To find and apply reasonable `expandtab`, `shiftwidth`, and `softtabstop` of
+the current buffer, call `:Findent` or `:FindentActivate`.
+If you want to control the region of content used for detection, select the
+region via visual selection (V) and call the command above.
+
+If you want to make this detection automatically, use `autocmd` like:
 
 ```vim
 augroup findent
   autocmd!
-  autocmd BufWinEnter *.js  Findent activate
-  autocmd BufWinEnter *.css Findent activate
+  autocmd FileType javascript FindentActivate
+  autocmd FileType css FindentActivate
 augroup END
 ```
+
+If you feel annoying for the detection message, use a bang (!) to suppress:
+
+```vim
+augroup findent
+  autocmd!
+  autocmd FileType javascript FindentActivate!
+  autocmd FileType css FindentActivate!
+augroup END
+```
+
+Command and Variable
+-------------------------------------------------------------------------------
+
+See `:help vim-findent-command` or `:help vim-findent-variable`.
 
 
 License
 --------------------------------------------------------------------------------
-Copyright (c) 2014 Alisue, hashnote.net
+Copyright (c) 2015 Alisue, hashnote.net
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files
