@@ -14,9 +14,9 @@ function! s:parse_args(args, ...) abort " {{{
       let options.warnings = 1
     elseif arg ==# '--no-warnings'
       let options.warnings = 0
-    elseif arg =~# '^--threshold='
+    elseif arg =~# '^--threshold=\d\+'
       let options.threshold = str2nr(matchstr(arg, '^--threshold=\zs\d\+'))
-    elseif arg =~# '^--chunksize='
+    elseif arg =~# '^--chunksize=\d\+'
       let options.chunksize = str2nr(matchstr(arg, '^--chunksize=\zs\d\+'))
     else
       echohl ErrorMsg
