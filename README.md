@@ -47,7 +47,7 @@ the current buffer, call `:Findent` or `:FindentActivate`.
 If you want to control the region of content used for detection, select the
 region via visual selection (V) and call the command above.
 
-If you want to make this detection automatically, use `autocmd` like:
+If you want to make this detection automatic, use `autocmd` like:
 
 ```vim
 augroup findent
