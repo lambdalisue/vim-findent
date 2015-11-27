@@ -1,11 +1,11 @@
-*vim-findent.txt*		Guess the indent rule from the buffer
+*vim-findent.txt*			Find and apply the existing indent rule
 
 Version: 0.1.0
 Author:  Alisue <lambdalisue@hashnote.net>		*vim-findent-author*
 Support: Vim 7.4 and above
 License: MIT license
 
-    Copyright (c) 2014 Alisue, hashnote.net
+    Copyright (c) 2015 Alisue, hashnote.net
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files
@@ -33,22 +33,30 @@ Introduction			|vim-findent-introduction|
 Install				|vim-findent-install|
 Usage				|vim-findent-usage|
 Interface			|vim-findent-interface|
+  Command			|vim-findent-command|
+  Variable			|vim-findent-variable|
 
 
 ==============================================================================
 INTRODUCTION				*vim-findent-introduction*
 
-*vim-findent* is a plugin to guess and apply the existing indent rule of the
-current buffer. This plugin guess reasonable value of |expandtab| and |shiftwidth|
-from the contents of the current buffer and apply.
+*vim-findent* is a plugin to find and apply reasonable values of |expandtab|,
+|shiftwidth|, and |softtabstop| from the content of the current buffer.
+
+vim-findent is small and simple plugin, compares to existing similar plugins
+such as vim-sleuth or detectindent. This plugin only provide three commands and
+no default |autocmd| is provided, mean that user can control the behavior of
+automatic detection by defining |autocmd| by them self. The detection algorithm
+is much simpler as well compared to vim-sleuth or detectindent. While we are
+living a real world and we are editing pre-formatted codes, I don't really
+think we need a super perfect but complex algorithm. A faster and simpler
+algorithm would be better.
 
 
 ==============================================================================
 INSTALL					*vim-findent-install*
 
-The repository (https://github.com/lambdalisue/vim-findent) follow a standard
-directory structure thus you can use Vundle.vim, neobundle.vim, or other vim
-plugin manager to install |vim-findent| like:
+Use Vundle.vim, neobundle.vim, or other vim plugin manager to install it like:
 >
 	" Vundle.vim
 	Plugin 'lambdalisue/vim-findent'
@@ -59,55 +67,113 @@ plugin manager to install |vim-findent| like:
 	" neobundle.vim (Lazy)
 	NeoBundleLazy 'lambdalisue/vim-findent', {
 		\ 'autoload': {
-		\   'commands': ['Findent'],
+		\   'commands': [
+		\     'Findent'
+		\     'FindentActivate'
+		\     'FindentDeactivate'
+		\   ],
 		\}}
 <
 If you are not using any vim plugin manager, you can copy the repository to
 your $VIM directory to enable the plugin.
 
+
 ==============================================================================
 USAGE					*vim-findent-usage*
 
-If you want to automatically activate findent in particular filetypes. Use the
-following settings (let's say you want to activate it in *.js or *.css).
+To find and apply reasonable |expandtab|, |shiftwidth|, and |softtabstop| of
+the current buffer, call |:Findent| or |:FindentActivate|.
+If you want to control the region of content used for detection, select the
+region via visual selection (V) and call the command above.
+
+If you want to make this detection automatically, use |autocmd| like:
 >
 	augroup findent
-	  autocmd! *
-	  autocmd BufRead *.js  Findent! activate
-	  autocmd BufRead *.css Findent! activate
+	  autocmd!
+	  autocmd FileType javascript FindentActivate
+	  autocmd FileType css FindentActivate
+	augroup END
+<
+If you feel annoying for the detection message, use a bang (!) to suppress:
+>
+	augroup findent
+	  autocmd!
+	  autocmd FileType javascript FindentActivate!
+	  autocmd FileType css FindentActivate!
 	augroup END
 <
 
 ==============================================================================
 INTERFACE				*vim-findent-interface*
 
-							*:Findent*
-:Findent[!] [toggle] {options}				*:Findent-toggle*
+-------------------------------------------------------------------------------
+COMMAND					*vim-findent-command*
 
-	Activate or deactivate findent.
+:Findent[!]						*:Findent*
+
+	Activate or deactivate (toggle) findent. If a bang (!) is specified to
+	the command, messages are suppressed.
 	See |:Findent-activate| and |:Findent-deactivate|.
 
-:Findent[!] activate {options}				*:Findent-activate*
+:FindentActivate[!]					*:Findent-activate*
 
-	Guess reasonable |expandtab| and |shiftwidth| from the content of the
-	current buffer and apply the settings. If bang (!) is specified, no
-	verbose messages are displayed.
-	The previous |expandtab| and |shiftwidth| can be restored by
-	|Findent-deactivate|.
+	Find and apply reasonable |expandtab|, |shiftwidth|, and |softtabstop|
+	of the content of the current buffer. If a bang (!) is specified to
+	the command, messages are suppressed.
+	It use the content between |g:findent#startline| (default: 0) and
+	|g:findent#lastline| (default: 100). To specify a particular region,
+	select the region via visual selection (V) and call this command.
+	The previous |expandtab|, |shiftwidth|, and |softtabstop| are saved in
+	a buffer variable and can be restored by |Findent-deactivate|.
 
-	The following {options} are available
+:FindentDeactivate[!]					*:Findent-deactivate*
 
-	--startline=N, -sN
-	Start guessing from the line N
+	Restore previous |expandtab|, |shiftwidth|, and |softtabstop| of the
+	current buffer saved by |:FindentActivate|. If a bang (!) is specified
+	to the command, messages are suppressed.
 
-	--lastline=N, -lN
-	End guessing at the line N
 
-:Findent[!] deactivate					*:Findent-deactivate*
+-------------------------------------------------------------------------------
+VARIABLE				*vim-findent-variable*
 
-	Restore previous |expandtab| and |shiftwidth| of the current buffer.
-	If bang (!) is specified, no verbose messages are displayed.
-	The previous |expandtab| and |shiftwidth| can be restored by
-	|Findent-deactivate|.
+g:findent#startline					*g:findent#startline*
+
+	A |Number|. findent try to detect the existing indent rule of the buffer
+	from this line of the buffer.
+	Default is 0.
+
+g:findent#lastline					*g:findent#lastline*
+
+	A |Number|. findent try to detect the existing indent rule of the buffer
+	to this line of the buffer.
+	Default is 100.
+
+g:findent#threshold					*g:findent#threshold*
+
+	A |Number|. If the value is grater than 0, findent complete detection of
+	unit (the number of spaces) when the number of unit appearance reach
+	this value. Otherwise findent compare the number of appearance of each
+	units and determine the reasonable unit.
+	
+	For example, the unit of the following content will be 2 if the value
+	of this option is 1. Otherwise the unit will be 4 because the number
+	of appearance of 4 (hoge) is grather than 2 (bar).
+>
+	foo
+	  bar
+	    hoge
+	    hoge
+	    hoge
+<       
+	Default is 1.
+
+g:findent#available_units			*g:findent#available_units*
+
+	A |List|. The number of spaces in this list are used as unit.
+	Posterior units will not be investigated if |g:findent#threshold| is
+	grather than 0 and the number of appearance of the prior unit reach
+	the threshold. So pay attention to the order of unit appearance in the
+	list.
+	Default is [2, 4, 8]
 
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

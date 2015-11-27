@@ -28,15 +28,14 @@ function! findent#guess(content, ...) abort " {{{
           \}
   endif
 
-  let units = [2, 4, 8]
   let score = 0
   let unit  = 0
-  for x in units
+  for x in g:findent#available_units
     let s = len(filter(copy(spaces), printf('v:val == %d', x)))
     if s > score
       let unit = x
       let score = s
-      if score >= threshold
+      if threshold > 0 && score >= threshold
         break
       endif
     endif
@@ -94,7 +93,7 @@ function! findent#activate(...) abort " {{{
   let b:_findent = meta
   if config.verbose
     echo printf(
-          \ 'Findent is activated (%s and shiftwidth=%d, softtabstop=%d)',
+          \ 'Findent is activated (%s, shiftwidth=%d, and softtabstop=%d)',
           \ &l:expandtab ? 'expandtab' : 'noexpandtab',
           \ &l:shiftwidth,
           \ &l:softtabstop,
@@ -121,7 +120,7 @@ function! findent#deactivate(...) abort " {{{
   unlet! b:_findent
   if config.verbose
     echo printf(
-          \ 'Findent is deactivated (%s and shiftwidth=%d, softtabstop=%d)',
+          \ 'Findent is deactivated (%s, shiftwidth=%d, and softtabstop=%d)',
           \ &l:expandtab ? 'expandtab' : 'noexpandtab',
           \ &l:shiftwidth,
           \ &l:softtabstop,
