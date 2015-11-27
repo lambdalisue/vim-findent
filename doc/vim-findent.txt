@@ -141,20 +141,20 @@ COMMAND					*vim-findent-command*
 	Find and apply reasonable values of |expandtab|, |shiftwidth|, |tabstop|,
 	and |softtabstop| of the current buffer.
 	If a |<bang>| (!) is specified, it force to find and apply the
-	reasonable indent rule. Otherwise it fail if the indent rules are
-	already applied.
+	reasonable indent rule. Otherwise it will fail if the indent rules
+	are already applied.
 
 	If '--no-messages' is specified, detection messages will be
 	suppressed. To enforce to display the messages, use '--messages'.
-	The default behavior is depend on |g:findent#enable_messages|.
+	The default behavior is depended on |g:findent#enable_messages|.
 	If '--no-warnings' is specified, warning messages will be
 	suppressed. To enforce to display the messages, use '--warnings'.
-	The default behavior is depend on |g:findent#enable_warnings|.
+	The default behavior is depended on |g:findent#enable_warnings|.
 
 	The detection will be performed on {CHUNKSIZE} lines at the middle
 	part of the content of the current buffer. To control the region of
 	the detection, use visual selection prior to the command.
-	The default value is |g:findent#chunksize|.
+	The default value of {CHUNKSIZE} is |g:findent#chunksize|.
 
 	The detected number of spaces in a space indent will be influenced by
 	{THRESHOLD}. If {THRESHOLD} is 0, the number of appearance of each
@@ -178,7 +178,7 @@ COMMAND					*vim-findent-command*
 	with 4 leading spaces. In this case, the detection program choose a
 	dominant leading spaces (4 spaces) as the number of spaces of a unit
 	if {THRESHOLD} is 0.
-	The default value is |g:findent#threshold|.
+	The default value of {THRESHOLD} is |g:findent#threshold|.
 
 	To restore the indent rule, call |:FindentRestore|.
 
@@ -190,10 +190,10 @@ COMMAND					*vim-findent-command*
 
 	If '--no-messages' is specified, detection messages will be
 	suppressed. To enforce to display the messages, use '--messages'.
-	The default behavior is depend on |g:findent#enable_messages|.
+	The default behavior is depended on |g:findent#enable_messages|.
 	If '--no-warnings' is specified, warning messages will be
 	suppressed. To enforce to display the messages, use '--warnings'.
-	The default behavior is depend on |g:findent#enable_warnings|.
+	The default behavior is depended on |g:findent#enable_warnings|.
 
 -------------------------------------------------------------------------------
 VARIABLE				*vim-findent-variable*
@@ -226,7 +226,7 @@ g:findent#samples				*g:findent#samples*
 
 	A |List| of the number of spaces of the unit (investigation sample).
 	Only the number of spaces in this variable are allowed to be an indent
-	unit, to decrease mis-detections of |shiftwidth| and/or |softtabstop|.
+	unit to decrease mis-detections of |shiftwidth| and/or |softtabstop|.
 	Posterior samples will not be investigated if |g:findent#threshold| is
 	grater than 0 and the number of appearance of the prior sample reach
 	the threshold. So pay attention to the order of sample in the list.
