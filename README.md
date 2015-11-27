@@ -5,10 +5,10 @@ vim-findent [![Build status](https://travis-ci.org/lambdalisue/vim-findent.svg?b
 *vim-findent* is a plugin to find and apply reasonable values of `expandtab`,
 `shiftwidth`, `tabstop`, and `softtabstop` from the content of the current buffer.
 
-vim-findent is small and simple plugin, compares to existing similar plugins such as [vim-sleuth](https://github.com/tpope/vim-sleuth) or [detectindent](https://github.com/ciaranm/detectindent).
-This plugin only provide three commands and no default `autocmd` is provided, mean that user can control the behavior of automatic detection by defining `autocmd` by them self.
+vim-findent is a small and simple Vim plugin, compares to existing similar plugins such as [vim-sleuth](https://github.com/tpope/vim-sleuth) or [detectindent](https://github.com/ciaranm/detectindent).
+This plugin only provides three commands and no default `autocmd` is provided, mean that users can control the behaviour of automatic detection by defining `autocmd` by themselves.
 The detection algorithm is much simpler as well compared to vim-sleuth or detectindent.
-While we are living a real world and we are editing pre-formatted codes, I don't really think we need a super perfect but complex algorithm.
+While we are living in a real world and we are editing pre-formatted codes, I don't really think we need a super perfect but complex algorithm.
 A faster and simpler algorithm would be better.
 
 See [Test cases](./test/dat) to figure out what kind of indent rules can be detected via this plugin.
@@ -50,13 +50,13 @@ NeoBundleLazy 'lambdalisue/vim-findent', {
 ```
 
 If you are not using any vim plugin manager, you can copy the repository to
-your $VIM directory to enable the plugin.
+your `$VIM` directory to enable the plugin.
 
 
 Usage
 -------------------------------------------------------------------------------
 
-To find and apply reasonable `expandtab`, `shiftwidth`, `tabstop', and `softtabstop` of
+To find and apply reasonable `expandtab`, `shiftwidth`, `tabstop`, and `softtabstop` of
 the current buffer, call `:Findent` or `:FindentActivate`.
 If you want to control the region of content used for detection, select the
 region via visual selection (V) and call the command above.
