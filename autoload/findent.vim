@@ -253,6 +253,7 @@ function! findent#FindentRestore(args) abort " {{{
 endfunction " }}}
 function! findent#FindentComplete(arglead, cmdline, cursorpos) abort " {{{
   let candidates = [
+        \ '-h', '--help',
         \ '--messages', '--no-messages',
         \ '--warnings', '--no-warnings',
         \ '--threshold=',
@@ -262,6 +263,7 @@ function! findent#FindentComplete(arglead, cmdline, cursorpos) abort " {{{
 endfunction " }}}
 function! findent#FindentRestoreComplete(arglead, cmdline, cursorpos) abort " {{{
   let candidates = [
+        \ '-h', '--help',
         \ '--messages', '--no-messages',
         \ '--warnings', '--no-warnings',
         \]
