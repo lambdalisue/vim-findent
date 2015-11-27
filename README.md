@@ -28,10 +28,23 @@ NeoBundle 'lambdalisue/vim-findent'
 NeoBundleLazy 'lambdalisue/vim-findent', {
 	\ 'autoload': {
 	\   'commands': [
-	\     'Findent'
-	\     'FindentActivate'
-	\     'FindentDeactivate'
+	\     'Findent',
+	\     'FindentActivate',
+	\     'FindentDeactivate',
 	\   ],
+	\}}
+
+" neobundle.vim (Lazy: with completion)
+NeoBundleLazy 'lambdalisue/vim-findent', {
+	\ 'autoload': {
+	\   'commands': [{
+	\     'name': [
+	\       'Findent', 
+	\       'FindentActivate'
+	\       'FindentDeactivate'
+	\     ],
+	\     'complete': 'customlist,findent#FindentComplete',
+	\   }],
 	\}}
 ```
 
@@ -52,20 +65,32 @@ If you want to make this detection automatic, use `autocmd` like:
 ```vim
 augroup findent
   autocmd!
-  autocmd FileType javascript FindentActivate
-  autocmd FileType css FindentActivate
+  autocmd BufRead *.js  FindentActivate
+  autocmd BufRead *.css FindentActivate
 augroup END
 ```
 
-If you feel annoying for the detection message, use a bang (!) to suppress:
+If you feel annoying for the detection fail message, use a bang (!) to suppress:
 
 ```vim
 augroup findent
   autocmd!
-  autocmd FileType javascript FindentActivate!
-  autocmd FileType css FindentActivate!
+  autocmd BufRead *.js  FindentActivate!
+  autocmd BufRead *.css FindentActivate!
 augroup END
 ```
+
+Or if you want to completely suppress the messages, specify 'quiet':
+
+```vim
+augroup findent
+  autocmd!
+  autocmd BufRead *.js  FindentActivate! quiet
+  autocmd BufRead *.css FindentActivate! quiet
+augroup END
+```
+
+Note: Use `BufRead` instead of `FileType` to prevent overwriting by ftplugin.
 
 Command and Variable
 -------------------------------------------------------------------------------

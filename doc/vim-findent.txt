@@ -68,10 +68,23 @@ Use Vundle.vim, neobundle.vim, or other vim plugin manager to install it like:
 	NeoBundleLazy 'lambdalisue/vim-findent', {
 		\ 'autoload': {
 		\   'commands': [
-		\     'Findent'
-		\     'FindentActivate'
-		\     'FindentDeactivate'
+		\     'Findent',
+		\     'FindentActivate',
+		\     'FindentDeactivate',
 		\   ],
+		\}}
+
+	" neobundle.vim (Lazy: with completion)
+	NeoBundleLazy 'lambdalisue/vim-findent', {
+		\ 'autoload': {
+		\   'commands': [{
+		\     'name': [
+		\       'Findent',
+		\       'FindentActivate',
+		\       'FindentDeactivate',
+		\     ],
+		\     'complete': 'customlist,findent#FindentComplete',
+		\   }],
 		\}}
 <
 If you are not using any vim plugin manager, you can copy the repository to
@@ -90,18 +103,27 @@ If you want to make this detection automatic, use |autocmd| like:
 >
 	augroup findent
 	  autocmd!
-	  autocmd FileType javascript FindentActivate
-	  autocmd FileType css FindentActivate
+	  autocmd BufRead *.js  FindentActivate
+	  autocmd BufRead *.css FindentActivate
 	augroup END
 <
-If you feel annoying for the detection message, use a bang (!) to suppress:
+If you feel annoying for the detection fail message, use a bang (!) to suppress:
 >
 	augroup findent
 	  autocmd!
-	  autocmd FileType javascript FindentActivate!
-	  autocmd FileType css FindentActivate!
+	  autocmd BufRead *.js  FindentActivate!
+	  autocmd BufRead *.css FindentActivate!
 	augroup END
 <
+If you want to completely suppress the messages, specify 'quiet':
+>
+	augroup findent
+	  autocmd!
+	  autocmd BufRead *.js  FindentActivate! quiet
+	  autocmd BufRead *.css FindentActivate! quiet
+	augroup END
+<
+Note: Use |BufRead| instead of |FileType| to prevent overwriting by ftplugin.
 
 ==============================================================================
 INTERFACE				*vim-findent-interface*
@@ -109,28 +131,31 @@ INTERFACE				*vim-findent-interface*
 -------------------------------------------------------------------------------
 COMMAND					*vim-findent-command*
 
-:Findent[!]						*:Findent*
+:Findent[!] [quiet]					*:Findent*
 
 	Activate or deactivate (toggle) findent. If a bang (!) is specified to
-	the command, messages are suppressed.
+	the command, warning messages are suppressed and if 'quiet' is specified,
+	detection messages are suppressed.
 	See |:Findent-activate| and |:Findent-deactivate|.
 
-:FindentActivate[!]					*:Findent-activate*
+:FindentActivate[!] [quiet]				*:Findent-activate*
 
 	Find and apply reasonable |expandtab|, |shiftwidth|, and |softtabstop|
 	of the content of the current buffer. If a bang (!) is specified to
-	the command, messages are suppressed.
+	the command, warning messages are suppressed and if 'quiet' is specified,
+	detection messages are suppressed.
 	It use the content between |g:findent#startline| (default: 0) and
 	|g:findent#lastline| (default: 100). To specify a particular region,
 	select the region via visual selection (V) and call this command.
 	The previous |expandtab|, |shiftwidth|, and |softtabstop| are saved in
 	a buffer variable and can be restored by |Findent-deactivate|.
 
-:FindentDeactivate[!]					*:Findent-deactivate*
+:FindentDeactivate[!] [quiet]				*:Findent-deactivate*
 
 	Restore previous |expandtab|, |shiftwidth|, and |softtabstop| of the
 	current buffer saved by |:FindentActivate|. If a bang (!) is specified
-	to the command, messages are suppressed.
+	to the command, warning messages are suppressed and if 'quiet' is
+	specified, detection messages are suppressed.
 
 
 -------------------------------------------------------------------------------

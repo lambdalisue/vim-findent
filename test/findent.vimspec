@@ -4,6 +4,24 @@ function! s:readfile(filename) abort
 endfunction
 
 Describe findent#
+  Before
+    " assign unusual values
+    let saved_expandtab = &expandtab
+    let saved_shiftwidth = &shiftwidth
+    let saved_tabstop = &tabstop
+    let saved_softtabstop = &softtabstop
+    set expandtab
+    set shiftwidth=1
+    set tabstop=1
+    set softtabstop=1
+  End
+  After
+    let &expandtab = saved_expandtab
+    let &shiftwidth = saved_shiftwidth
+    let &tabstop = saved_tabstop
+    let &softtabstop = saved_softtabstop
+  End
+
   Context guess({content})
     It should return an empty dictionary for an empty {content}
       let ret = findent#guess([])
@@ -50,15 +68,37 @@ Describe findent#
             \})
     End
 
-    It should return a correct value for Vim(C) style indented {content}
-      let content = s:readfile('vimstyle.js')
+    It should return a correct value for ts8sw4 style indented {content}
+      let content = s:readfile('ts8sw4.js')
       let ret = findent#guess(content)
       Assert Equals(ret, {
             \ 'expandtab': 0,
             \ 'shiftwidth': 4,
-            \ 'softtabstop': 8,
+            \ 'tabstop': 8,
+            \ 'softtabstop': 0,
             \})
     End
 
+    It should return a correct value for ts6sw2 style indented {content}
+      let content = s:readfile('ts6sw2.js')
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 0,
+            \ 'shiftwidth': 2,
+            \ 'tabstop': 6,
+            \ 'softtabstop': 0,
+            \})
+    End
+
+    It should return a correct value for BSD/KNF style indented {content}
+      let content = s:readfile('bsd_knf.js')
+      let ret = findent#guess(content)
+      Assert Equals(ret, {
+            \ 'expandtab': 0,
+            \ 'shiftwidth': 4,
+            \ 'tabstop': 8,
+            \ 'softtabstop': 0,
+            \})
+    End
   End
 End
