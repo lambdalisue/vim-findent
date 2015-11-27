@@ -3,7 +3,7 @@ vim-findent [![Build status](https://travis-ci.org/lambdalisue/vim-findent.svg?b
 
 
 *vim-findent* is a plugin to find and apply reasonable values of `expandtab`,
-`shiftwidth`, and `softtabstop` from the content of the current buffer.
+`shiftwidth`, `tabstop`, and `softtabstop` from the content of the current buffer.
 
 vim-findent is small and simple plugin, compares to existing similar plugins such as [vim-sleuth](https://github.com/tpope/vim-sleuth) or [detectindent](https://github.com/ciaranm/detectindent).
 This plugin only provide three commands and no default `autocmd` is provided, mean that user can control the behavior of automatic detection by defining `autocmd` by them self.
