@@ -11,6 +11,7 @@ The detection algorithm is much simpler as well compared to vim-sleuth or detect
 While we are living a real world and we are editing pre-formatted codes, I don't really think we need a super perfect but complex algorithm.
 A faster and simpler algorithm would be better.
 
+See [Test cases](./test/dat) to figure out what kind of indent rules can be detected via this plugin.
 
 Install
 -------------------------------------------------------------------------------

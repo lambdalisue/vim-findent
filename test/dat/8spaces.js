@@ -3,6 +3,9 @@
  *
  * @author: Alisue <lambdalisue@hashnote.net>
  *
+ * Correct indent rule of this file
+ * expandtab, shiftwidth=8, softtabstop=8
+ *
  */
 (function() {
         "use strict";
