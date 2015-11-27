@@ -16,7 +16,7 @@ function! s:guess_tab_style(tabs, leadings, threshold) abort " {{{
     return {
           \ 'expandtab': 0,
           \ 'shiftwidth':  min(spaces),
-          \ 'softtabstop': max(spaces) * 2,
+          \ 'softtabstop': min(spaces) + max(spaces),
           \}
   endif
 endfunction " }}}
