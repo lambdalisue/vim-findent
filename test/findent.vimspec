@@ -1,3 +1,8 @@
+function! s:readfile(filename) abort
+  let path = printf('%s/dat/%s', g:repo, a:filename)
+  return readfile(path)
+endfunction
+
 Describe findent#
   Context guess({content})
     It should return an empty dictionary for an empty {content}
@@ -6,14 +11,7 @@ Describe findent#
     End
 
     It should return a correct value for tab indented {content}
-      let content = [
-            \ 'Foo',
-            \ "\tbar",
-            \ "\t\thoge",
-            \ "\tbar",
-            \ "\t\thoge",
-            \ ' wrong indent',
-            \]
+      let content = s:readfile('tab.js')
       let ret = findent#guess(content)
       Assert Equals(ret, {
             \ 'expandtab': 0,
@@ -23,29 +21,7 @@ Describe findent#
     End
 
     It should return a correct value for 2 spaces indented {content}
-      let content = [
-            \ 'Foo',
-            \ '  bar',
-            \ '    hoge',
-            \ '  bar',
-            \ '    hoge',
-            \ ' wrong indent',
-            \]
-      let ret = findent#guess(content)
-      Assert Equals(ret, {
-            \ 'expandtab': 1,
-            \ 'shiftwidth': 2,
-            \ 'softtabstop': 2,
-            \})
-      let content = [
-            \ 'Foo',
-            \ '  bar',
-            \ '    hoge',
-            \ '    hoge',
-            \ '    hoge',
-            \ '    hoge',
-            \ ' wrong indent',
-            \]
+      let content = s:readfile('2spaces.js')
       let ret = findent#guess(content)
       Assert Equals(ret, {
             \ 'expandtab': 1,
@@ -55,14 +31,7 @@ Describe findent#
     End
 
     It should return a correct value for 4 spaces indented {content}
-      let content = [
-            \ 'Foo',
-            \ '    bar',
-            \ '        hoge',
-            \ '    bar',
-            \ '        hoge',
-            \ ' wrong indent',
-            \]
+      let content = s:readfile('4spaces.js')
       let ret = findent#guess(content)
       Assert Equals(ret, {
             \ 'expandtab': 1,
@@ -72,12 +41,7 @@ Describe findent#
     End
 
     It should return a correct value for 8 spaces indented {content}
-      let content = [
-            \ 'Foo',
-            \ '        bar',
-            \ '                hoge',
-            \ ' wrong indent',
-            \]
+      let content = s:readfile('8spaces.js')
       let ret = findent#guess(content)
       Assert Equals(ret, {
             \ 'expandtab': 1,
@@ -86,40 +50,15 @@ Describe findent#
             \})
     End
 
-    It should return a correct value for 2 spaces and tab indented mixed {content}
-      let content = [
-            \ 'Foo',
-            \ "\tbar",
-            \ "\t\thoge",
-            \ "\t\t\tpiyo",
-            \ 'Foo',
-            \ '  bar',
-            \ '    hoge',
-            \ ' wrong indent',
-            \]
+    It should return a correct value for Vim(C) style indented {content}
+      let content = s:readfile('vimstyle.js')
       let ret = findent#guess(content)
       Assert Equals(ret, {
             \ 'expandtab': 0,
-            \ 'shiftwidth': 0,
-            \ 'softtabstop': 0,
-            \})
-
-      let content = [
-            \ 'Foo',
-            \ "\tbar",
-            \ "\t\thoge",
-            \ 'Foo',
-            \ '  bar',
-            \ '    hoge',
-            \ '      piyo',
-            \ ' wrong indent',
-            \]
-      let ret = findent#guess(content)
-      Assert Equals(ret, {
-            \ 'expandtab': 1,
-            \ 'shiftwidth': 2,
-            \ 'softtabstop': 2,
+            \ 'shiftwidth': 4,
+            \ 'softtabstop': 8,
             \})
     End
+
   End
 End

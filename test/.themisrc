@@ -1,3 +1,6 @@
+let g:file = expand('<sfile>:p')
+let g:repo = fnamemodify(g:file, ':h')
+
 let s:assert = themis#helper('assert')
 call themis#option('recursive', 1)
 call themis#helper('command').with(s:assert)
