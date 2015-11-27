@@ -221,6 +221,11 @@ function! findent#Findent(bang, line1, line2, args) abort " {{{
         \ 'startline': a:line1,
         \ 'lastline': a:line2,
         \})
+  if empty(options)
+    " failed to parse
+    return
+  endif
+
   redraw
   if get(options, 'help')
     echo ':Findent[!] [-h|--help] [--[no-]messages] [--[no-]warnings] [--chunksize={CHUNKSIZE}] [--threshold={THRESHOLD}]'
@@ -239,6 +244,11 @@ function! findent#Findent(bang, line1, line2, args) abort " {{{
 endfunction " }}}
 function! findent#FindentRestore(args) abort " {{{
   let options = s:parse_args(a:args)
+  if empty(options)
+    " failed to parse
+    return
+  endif
+
   redraw
   if get(options, 'help')
     echo ':FindentRestore [-h|--help] [--[no-]messages] [--[no-]warnings]'
