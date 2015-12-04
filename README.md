@@ -78,8 +78,6 @@ If you feel annoying for the detection message, use '--no-messages':
 ```vim
 augroup findent
   autocmd!
-  autocmd BufRead *.js  Findent --no-messages
-  autocmd BufRead *.css Findent --no-messages
   autocmd FileType javascript Findent --no-messages
   autocmd FileType css        Findent --no-messages
 augroup END
