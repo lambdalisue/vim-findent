@@ -15,5 +15,15 @@ command! -nargs=*
       \ FindentRestore
       \ :call findent#FindentRestore([<f-args>])
 
+augroup findent-process-reservation
+  autocmd!
+  autocmd BufWinEnter *
+        \ if exists('b:_findent_reserved') |
+        \   call findent#apply(b:_findent_reserved) |
+        \   silent! unlet! b:_findent_reserved |
+        \ endif
+augroup END
+
+
 let &cpoptions = s:save_cpo
 " vim:set et ts=2 sts=2 sw=2 tw=0 fdm=marker:

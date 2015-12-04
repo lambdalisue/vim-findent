@@ -68,8 +68,8 @@ If you want to make this detection automatic, use `autocmd` like:
 ```vim
 augroup findent
   autocmd!
-  autocmd BufRead *.js  Findent
-  autocmd BufRead *.css Findent
+  autocmd FileType javascript Findent
+  autocmd FileType css        Findent
 augroup END
 ```
 
@@ -80,6 +80,8 @@ augroup findent
   autocmd!
   autocmd BufRead *.js  Findent --no-messages
   autocmd BufRead *.css Findent --no-messages
+  autocmd FileType javascript Findent --no-messages
+  autocmd FileType css        Findent --no-messages
 augroup END
 ```
 
@@ -88,12 +90,15 @@ Or if you want to completely suppress messages, use '--no-warnings' as well:
 ```vim
 augroup findent
   autocmd!
-  autocmd BufRead *.js  Findent --no-messages --no-warnings
-  autocmd BufRead *.css Findent --no-messages --no-warnings
+  autocmd FileType javascript Findent --no-messages --no-warnings
+  autocmd FileType css        Findent --no-messages --no-warnings
 augroup END
 ```
 
-Note: Use `BufRead` instead of `FileType` to prevent overwriting by ftplugin.
+In this case, `Findent` reserve the specified options into a buffer variable and
+actual `Findent` call will be performed on `BufWinEnter` to make
+sure that `Findent` is called after any `FileType` autocmd or `ftplugin`.
+See `:help Findent-autocmd` for more detail about this behavior.
 
 Command and Variable
 -------------------------------------------------------------------------------

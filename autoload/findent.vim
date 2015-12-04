@@ -22,7 +22,7 @@ function! s:parse_args(args, ...) abort " {{{
       echohl ErrorMsg
       echo printf('Unknown option "%s" is specified', arg)
       echohl None
-      return {}
+      return { 'failed': 1 }
     endif
   endfor
   return options
@@ -221,13 +221,13 @@ function! findent#Findent(bang, line1, line2, args) abort " {{{
         \ 'startline': a:line1,
         \ 'lastline': a:line2,
         \})
-  if empty(options)
+  if get(options, 'failed')
     " failed to parse
     return
   endif
 
-  redraw
   if get(options, 'help')
+    redraw
     echo ':Findent[!] [-h|--help] [--[no-]messages] [--[no-]warnings] [--chunksize={CHUNKSIZE}] [--threshold={THRESHOLD}]'
     echo ' '
     echo 'Find and apply a reasonable indent rule of the current buffer'
@@ -239,12 +239,21 @@ function! findent#Findent(bang, line1, line2, args) abort " {{{
     echo ' --chunksize={CHUNKSIZE}    Specify chunksize (the number of lines) of the content'
     echo ' --threshold={THRESHOLD}    Specify detection threshold of a space indent'
   else
-    call findent#apply(options)
+    if empty(expand('<afile>')) || options.force
+      " Findent has called manually or with bang
+      redraw
+      call findent#apply(options)
+    else
+      " Findent called in autocmd so reserve options to call Findent
+      " in BufWinEnter to make sure that Findent is called after filetype
+      " specification
+      let b:_findent_reserved = extend(options, { 'force': 1 })
+    endif
   endif
 endfunction " }}}
 function! findent#FindentRestore(args) abort " {{{
   let options = s:parse_args(a:args)
-  if empty(options)
+  if get(options, 'failed')
     " failed to parse
     return
   endif

@@ -45,8 +45,8 @@ INTRODUCTION				*vim-findent-introduction*
 
 vim-findent is small and simple plugin, compares to existing similar plugins
 such as vim-sleuth or detectindent. This plugin only provides two commands and
-no default |autocmd| is provided, mean that users can control the behavior of
-automatic detection by defining |autocmd| by themselves.
+no default |FileType| |autocmd| is provided, mean that users can control the
+behavior of automatic detection by defining |autocmd| by themselves.
 The detection algorithm is much simpler as well compared to vim-sleuth or
 detectindent. While we are living in a real world and we are editing
 pre-formatted codes, I don't really think we need a super perfect but complex
@@ -109,27 +109,33 @@ If you want to make this detection automatic, use |autocmd| like:
 >
 	augroup findent
 	  autocmd!
-	  autocmd BufRead *.js  Findent
-	  autocmd BufRead *.css Findent
+	  autocmd FileType javascript Findent
+	  autocmd FileType css        Findent
 	augroup END
 <
 If you feel annoying for the detection message, use '--no-messages':
 >
 	augroup findent
 	  autocmd!
-	  autocmd BufRead *.js  Findent --no-messages
-	  autocmd BufRead *.css Findent --no-messages
+	  autocmd FileType javascript Findent --no-messages
+	  autocmd FileType css        Findent --no-messages
 	augroup END
 <
 Or if you want to completely suppress messages, use '--no-warnings' as well:
 >
 	augroup findent
 	  autocmd!
-	  autocmd BufRead *.js  Findent --no-messages --no-warnings
-	  autocmd BufRead *.css Findent --no-messages --no-warnings
+	  autocmd FileType javascript Findent --no-messages --no-warnings
+	  autocmd FileType css        Findent --no-messages --no-warnings
 	augroup END
 <
-Note: Use |BufRead| instead of |FileType| to prevent overwriting by ftplugin.
+In this case, |:Findent| will find and apply an indent rule of the buffer in
+|BufWinEnter| |autocmd| but |FileType| |autocmd|. See |:Findent| for more detail.
+In this case, |:Findent| reserve the specified options into a buffer variable
+and actual |:Findent| call will be performed on |BufWinEnter| autocmd.
+This is required to make sure that the |:Findent| command is called only after
+|FileType| autocmd or |ftplugin| to prevent setting overwrite.
+See |:Findent-autocmd| for more detail about this behavior.
 
 ==============================================================================
 INTERFACE				*vim-findent-interface*
@@ -182,6 +188,15 @@ COMMAND					*vim-findent-command*
 	dominant leading spaces (4 spaces) as the number of spaces of a unit
 	if {THRESHOLD} is 0.
 	The default value of {THRESHOLD} is |g:findent#threshold|.
+
+							*:Findent-autocmd*
+	If |:Findent| is called from |autocmd|, it automatically reserve the
+	specified options to call |:Findent| in |BufWinEnter|. This is
+	required to make sure that |:Findent| is called only after |FileType|
+	|autocmd| and/or |ftplugin|. So that applied settings by |:Findent|
+	will not be overwritten by filetype specific settings.
+	If you want to call |:Findent| whenever the command is called even
+	from |autocmd|, specify a |<bang>| (!).
 
 	To restore the indent rule, call |:FindentRestore|.
 
