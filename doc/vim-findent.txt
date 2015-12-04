@@ -95,12 +95,15 @@ your $VIM directory to enable the plugin.
 ==============================================================================
 USAGE					*vim-findent-usage*
 
-To find and apply reasonable |expandtab|, |shiftwidth|, |tabstop|, and
-|softtabstop| of the current buffer, call |:Findent|.
+Call |:Findent| to find and apply reasonable |expandtab|, |shiftwidth|,
+|tabstop|, and |softtabstop| (an indent rule) of the current buffer.
 It automatically use a middle part of the content to detect the reasonable
 indent rule and apply to the local setting (|setlocal|).
 If you want to control the region of content used for detection, use visual
 selection to select the region prior to the command.
+
+Call |:FindentRestore| to restore a previous indent rule of the current buffer,
+or call |:Findent!| to re-apply findent forcedly.
 
 If you want to make this detection automatic, use |autocmd| like:
 >
