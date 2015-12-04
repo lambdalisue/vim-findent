@@ -5,7 +5,7 @@ vim-findent [![Build status](https://travis-ci.org/lambdalisue/vim-findent.svg?b
 *vim-findent* is a plugin to find and apply reasonable values of `expandtab`, `shiftwidth`, `tabstop`, and `softtabstop` (an indent rule) from the content of the current buffer.
 
 vim-findent is a small and simple Vim plugin, compares to existing similar plugins such as [vim-sleuth](https://github.com/tpope/vim-sleuth) or [detectindent](https://github.com/ciaranm/detectindent).
-This plugin only provides two commands and no default `autocmd` is provided, mean that users can control the behavior of automatic detection by defining `autocmd` by themselves.
+This plugin only provides two commands and no default `FileType` `autocmd` is provided, mean that users can control the behavior of automatic detection by defining `autocmd` by themselves.
 The detection algorithm is much simpler as well compared to vim-sleuth or detectindent.
 While we are living in a real world and we are editing pre-formatted codes, I don't really think we need a super perfect but complex algorithm.
 A faster and simpler algorithm would be better.
@@ -94,8 +94,8 @@ augroup END
 ```
 
 In this case, `Findent` reserve the specified options into a buffer variable and
-actual `Findent` call will be performed on `BufWinEnter` to make
-sure that `Findent` is called after any `FileType` autocmd or `ftplugin`.
+actual `Findent` call will be performed on `BufWinEnter` autocmd.
+This is required to make sure that the `Findent` command is called only after `FileType` autocmd or `ftplugin`.
 See `:help Findent-autocmd` for more detail about this behavior.
 
 Command and Variable
