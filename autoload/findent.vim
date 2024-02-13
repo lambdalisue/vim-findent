@@ -158,6 +158,13 @@ function! findent#apply(...) abort " {{{
     endif
     return
   endif
+
+  " check the guessed tabstop value because 'tabstop' must be bigger than 0
+  let tabstop = get(meta, 'tabstop', 0)
+  if tabstop <= 0
+    let tabstop = &l:tabstop
+  endif
+
   let meta.previous = {}
   let meta.previous.expandtab   = &l:expandtab
   let meta.previous.shiftwidth  = &l:shiftwidth
@@ -165,7 +172,7 @@ function! findent#apply(...) abort " {{{
   let meta.previous.softtabstop = &l:softtabstop
   let &l:expandtab   = meta.expandtab
   let &l:shiftwidth  = meta.shiftwidth
-  let &l:tabstop     = get(meta, 'tabstop', &l:tabstop)
+  let &l:tabstop     = tabstop
   let &l:softtabstop = get(meta, 'softtabstop', &l:softtabstop)
   let b:_findent = meta
   if options.messages
